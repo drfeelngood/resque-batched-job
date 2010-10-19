@@ -1,0 +1,20 @@
+$:.unshift(File.join(File.dirname(__FILE__), '..'))
+require 'rubygems'
+require 'resque'
+require 'lib/resque/plugins/batched_job'
+require 'example/job'
+
+task :run => [:setup, :work]
+
+task :setup do
+  Resque.redis.flushdb
+  %w(batman robin).each { |n| Resque.enqueue(Job, :batcave, n) }
+  %w(luke c3po).each { |n| Resque.enqueue(Job, :xwing, n) }
+  %w(pricard kirk spock).each { |n| Resque.enqueue(Job, :uss_enterprise, n) }
+  Resque.enqueue(Job, :litter_box, :catwoman)
+end
+
+task :work do
+  worker = Resque::Worker.new('example')
+  worker.work(5)
+end
