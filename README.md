@@ -16,7 +16,7 @@ Example
   
 	  @queue = :example
   
-	  def self.before_perform_turn_computer_off(place, name)
+	  def self.before_perform_clean_up(place, name)
 	    puts "#{name} straightening up desk"
 	  end
   
