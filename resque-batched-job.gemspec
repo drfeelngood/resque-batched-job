@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name        = "resque-batched-job"
   s.version     = "#{Resque::Plugins::BatchedJob::VERSION}"
   s.date        = Time.now.strftime('%Y-%m-%d')
-  s.homepage    = "http://github.com/djohnston/resque-batched-job"
+  s.homepage    = "https://github.com/drfeelngood/resque-batched-job"
   s.authors     = ["Daniel Johnston"]
   s.email       = "dan@dj-agiledev.com"
   
