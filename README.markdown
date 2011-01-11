@@ -15,6 +15,7 @@ Example
 -------
 	
 	module Job
+<<<<<<< HEAD
 	  extend Resque::Plugins::BatchedJob
 
 	  def self.perform(id, *args)
@@ -24,5 +25,17 @@ Example
 	  def self.after_batch_heavy_lifting(id, *args)
 	    heavy_lifting(id)
 	  end
+=======
+	
+          extend Resque::Plugins::BatchedJob
+	
+	  def self.perform(id, *args)
+	    prime(id, args)
+          end
+		
+	  def self.after_batch_heavy_lifting(id, *args)
+	    heavy_lifting(id)
+          end
+>>>>>>> 70bf70a5f3368c7a65cdebe1fa59c30bc91931ef
 
 	end
