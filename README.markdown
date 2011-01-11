@@ -16,14 +16,14 @@ Example
 	
 	module Job
 	
-		extend Resque::Plugins::BatchedJob
+          extend Resque::Plugins::BatchedJob
 	
-		def self.perform(id, *args)
-			prime(id, args)
-		end
+	  def self.perform(id, *args)
+	    prime(id, args)
+          end
 		
-		def self.after_batch_heavy_lifting(id, *args)
-			heavy_lifting(id)
-		end
+	  def self.after_batch_heavy_lifting(id, *args)
+	    heavy_lifting(id)
+          end
 
 	end
