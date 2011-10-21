@@ -25,7 +25,7 @@ module Resque
       #
       # Batch the job.  The first argument of a batched job, is the batch id.
       def after_enqueue_batch(id, *args)
-        redis.sadd(batch(id), encode(args))
+        redis.sadd(batch(id), encode(args.insert(0, self.name)))
       end
       
 =begin
@@ -46,7 +46,7 @@ module Resque
         begin
           yield
         ensure
-          redis.srem(batch(id), "#{encode(args)}")
+          redis.srem(batch(id), "#{encode(args.insert(0, self.name))}")
         end
       end
 
