@@ -25,17 +25,11 @@ module Resque
         redis.rpush(batch(id), encode(:class => self, :args => args))
       end
 
-      # After every job, no matter in the event of success or failure, we need
-      # to remove the job from the batch set.
-      def around_perform_amend_batch(id, *args)
-        yield
-      ensure
-        redis.lrem(batch(id), 1, encode(:class => self, :args => args))
-      end
-
-      # After each job is performed, check to see if the job is the last of
-      # the given batch.  If so, run after_batch hooks.
+      # After the job is performed, remove it from the batched job list.  If the
+      # current job is the last in the batch to be performed, invoke the after_batch
+      # hooks.
       def after_perform_batch(id, *args)
+        redis.lrem(batch(id), 1, encode(:class => self, :args => args))
         if batch_complete?(id)
           after_batch_hooks = Resque::Plugin.after_batch_hooks(self)
           after_batch_hooks.each do |hook|
@@ -44,13 +38,15 @@ module Resque
         end
       end
 
-      # Checks to see if the batch key exists.  If the key does exist, is the 
-      # set empty?  The Redis srem command deletes the key when the last item 
-      # of a set is removed. Ah, go ahead and check the size.
+      # Checks the size of the batched job list and returns true if the list is
+      # empty or if the key does not exist.
       def batch_complete?(id)
         redis.llen(batch(id)) == 0
       end
-      alias :batch_exist? :batch_complete? # => are they?
+
+      def batch_exist?(id)
+        redis.exists(batch(id))
+      end
 
     end
 
