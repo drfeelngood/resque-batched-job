@@ -42,7 +42,8 @@ class BatchedJobTest < Test::Unit::TestCase
   end
   
   def test_batch_size
-    assert_equal(@cnt, redis.smembers(@batch).size)
+    # assert_equal(@cnt, redis.smembers(@batch).size)
+    assert_equal(@cnt, redis.llen(@batch))
   end
   
   def test_batch_hook
