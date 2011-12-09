@@ -22,26 +22,15 @@ module Resque
 
       # Batch the job.  The first argument of a batched job, is the batch id.
       def after_enqueue_batch(id, *args)
-        redis.sadd(batch(id), encode(:class => self, :args => args))
+        redis.rpush(batch(id), encode(:class => self, :args => args))
       end
-
-=begin
-  TODO: Determine if it's necessary to double check the jobs existance 
-    before performing it.  If so, do what?
-    
-      def before_perform_audit_batch(id, *args)
-        unless redis.sismember(batch(id), "#{encode(args)}")
-          raise Resque::Job::DontPerform.new("#{args} are not a member of #{batch(id)}")
-        end
-      end
-=end
 
       # After every job, no matter in the event of success or failure, we need
       # to remove the job from the batch set.
       def around_perform_amend_batch(id, *args)
         yield
       ensure
-        redis.srem(batch(id), "#{encode(:class => self, :args => args)}")
+        redis.lrem(batch(id), 1, encode(:class => self, :args => args))
       end
 
       # After each job is performed, check to see if the job is the last of
@@ -59,7 +48,7 @@ module Resque
       # set empty?  The Redis srem command deletes the key when the last item 
       # of a set is removed. Ah, go ahead and check the size.
       def batch_complete?(id)
-        redis.scard(batch(id)) == 0
+        redis.llen(batch(id)) == 0
       end
       alias :batch_exist? :batch_complete? # => are they?
 
