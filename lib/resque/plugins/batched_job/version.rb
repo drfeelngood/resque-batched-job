@@ -1,7 +1,7 @@
 module Resque
   module Plugins
     module BatchedJob
-      VERSION = '0.2.0'
+      VERSION = '0.6.0'
     end
   end
 end
