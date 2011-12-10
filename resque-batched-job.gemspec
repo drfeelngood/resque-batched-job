@@ -19,7 +19,7 @@ DESC
 
   s.add_dependency "resque", ">= 1.10.0"
 
-  s.files       = %w(LICENSE Rakefile README.markdown)
+  s.files       = %w(LICENSE Rakefile README.md)
   s.files      += Dir.glob("lib/**/*")
   s.test_files += Dir.glob("test/test_*")
 
