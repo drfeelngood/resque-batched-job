@@ -59,13 +59,15 @@ module Resque
 
       private
 
+        # Lock a batch key before executing Redis commands.  This will ensure
+        # no race conditions occur when modifying batch information.
         def mutex(id, &block)
           is_expired = lambda do |locked_at|
             locked_at.to_f < Time.now.to_f
           end
           bid   = batch(id)
           _key_ = "#{bid}:lock"
-          
+
           until redis.setnx(_key_, Time.now.to_f + 0.5)
             next unless timestamp = redis.get(_key_)
 
