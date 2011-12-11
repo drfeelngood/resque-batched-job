@@ -11,6 +11,7 @@ class BatchedJobTest < Test::Unit::TestCase
   def teardown
     redis.del(@batch)
     redis.del("queue:test")
+    redis.del("#{@batch}:lock")
   end
 
   def test_list
@@ -83,6 +84,31 @@ class BatchedJobTest < Test::Unit::TestCase
     assert($batch_complete)
     assert(Job.batch_complete?(@batch_id))
     assert_equal(false, Job.batch_exist?(@batch_id))
+  end
+
+  def test_mutex
+    Job.send(:mutex, @batch_id) do
+      assert(true)
+    end
+    assert_equal(false, redis.exists("#{@batch}:lock"))
+  end
+  
+  def test_locking
+    threads = []
+    x, y = 10, 5
+
+    x.times do
+      threads << Thread.new do
+        y.times do
+          Job.send(:mutex, @batch_id) do
+            redis.incr(@batch)
+          end
+        end
+      end
+    end
+    threads.each { |t| t.join }
+
+    assert_equal(x * y, Integer(redis.get(@batch)))
   end
 
   private
