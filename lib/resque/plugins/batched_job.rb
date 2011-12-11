@@ -60,7 +60,23 @@ module Resque
       private
 
         # Lock a batch key before executing Redis commands.  This will ensure
-        # no race conditions occur when modifying batch information.
+        # no race conditions occur when modifying batch information.  Here is
+        # an example of how this works.  See http://redis.io/commands/setnx for
+        # more information.
+        # 
+        # * Job2 sends SETNX batch:123:lock in order to aquire a lock.
+        # * Job1 still has the key locked, so Job2 continues into the loop.
+        # * Job2 sends GET to aquire the lock timestamp.
+        # * If the timestamp does not exist (Job1 released the lock), Job2 
+        #   attemps to start from the beginning again.
+        # * If the timestamp exists and has not expired, Job2 sleeps for a 
+        #   moment and then retries from the start.
+        # * If the timestamp exists and has expired, Job2 sends GETSET to aquire
+        #   a lock.  This returns the previous value of the lock.
+        # * If the previous timestamp has not expired, another process was faster
+        #   and aquired the lock.  This means Job2 has to start from the beginnig.
+        # * If the previous timestamp is still expired the lock has been set and
+        #   processing can continue safely
         def mutex(id, &block)
           is_expired = lambda do |locked_at|
             locked_at.to_f < Time.now.to_f
