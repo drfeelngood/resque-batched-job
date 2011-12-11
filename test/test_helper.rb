@@ -1,7 +1,8 @@
 require 'rubygems'
 require 'test/unit'
-require 'resque'
+require 'thread'
 
+require 'resque'
 require File.dirname(__FILE__) + '/../lib/resque-batched-job'
 
 class Job
