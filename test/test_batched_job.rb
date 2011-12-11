@@ -27,6 +27,7 @@ class BatchedJobTest < Test::Unit::TestCase
     assert_equal(@batch, Job.batch(@batch_id))
   end
 
+  # Ensure the length of the Redis list matches the number of jobs we enqueue.
   def test_batch_size
     assert_nothing_raised do
       5.times { Resque.enqueue(Job, @batch_id, "arg#{rand(100)}") }
@@ -34,7 +35,10 @@ class BatchedJobTest < Test::Unit::TestCase
     assert_equal(5, redis.llen(@batch))
   end
 
+  # Make sure the after_batch hook is fired
   def test_batch_hook
+    assert_equal(false, Job.batch_exist?(@batch_id))
+    
     assert_nothing_raised do
       5.times { Resque.enqueue(Job, @batch_id, "arg#{rand(100)}") }
     end
@@ -60,7 +64,10 @@ class BatchedJobTest < Test::Unit::TestCase
     assert_equal(false, Job.batch_exist?(@batch_id))
   end
 
+  # Test that jobs with identical args behave properly.
   def test_duplicate_args
+    assert_equal(false, Job.batch_exist?(@batch_id))
+    
     assert_nothing_raised do
       5.times { Resque.enqueue(JobWithoutArgs, @batch_id) }
     end
@@ -86,13 +93,15 @@ class BatchedJobTest < Test::Unit::TestCase
     assert_equal(false, Job.batch_exist?(@batch_id))
   end
 
+  # Make sure the block is executed and the lock is removed.
   def test_mutex
     Job.send(:mutex, @batch_id) do
       assert(true)
     end
     assert_equal(false, redis.exists("#{@batch}:lock"))
   end
-  
+
+  # Make sure no race conditions occur.
   def test_locking
     threads = []
     x, y = 10, 5
