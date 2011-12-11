@@ -31,9 +31,7 @@ module Resque
       # current job is the last in the batch to be performed, invoke the after_batch
       # hooks.
       def after_perform_batch(id, *args)
-        mutex(id) do |bid| 
-          redis.lrem(bid, 1, encode(:class => self, :args => args))
-        end
+        remove_batched_job(id, *args)
 
         if batch_complete?(id)
           after_batch_hooks = Resque::Plugin.after_batch_hooks(self)
@@ -54,6 +52,13 @@ module Resque
       def batch_exist?(id)
         mutex(id) do |bid| 
           redis.exists(bid)
+        end
+      end
+
+      # Remove a job from the batch list.
+      def remove_batched_job(id, *args)
+        mutex(id) do |bid|
+          redis.lrem(bid, 1, encode(:class => self, :args => args))
         end
       end
 
