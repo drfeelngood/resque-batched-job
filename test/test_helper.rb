@@ -3,7 +3,9 @@ require 'test/unit'
 require 'thread'
 
 require 'resque'
-require File.dirname(__FILE__) + '/../lib/resque-batched-job'
+
+$:.unshift(File.expand_path(File.dirname(__FILE__)) + '/../lib')
+require 'resque/batched_job'
 
 class Job
   extend Resque::Plugins::BatchedJob
