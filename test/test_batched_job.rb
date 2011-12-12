@@ -20,6 +20,14 @@ class BatchedJobTest < Test::Unit::TestCase
     end
   end
 
+  def test_encoding
+    Resque.enqueue(Job, @batch_id, 123)
+    Resque.enqueue(JobWithoutArgs, @batch_id)
+
+    assert_equal("{\"class\":\"Job\",\"args\":[123]}", redis.lindex(@batch, 0))
+    assert_equal("{\"class\":\"JobWithoutArgs\",\"args\":[]}", redis.lindex(@batch, 1))
+  end
+
   def test_batch_key
     assert_nothing_raised do
       Resque.enqueue(Job, @batch_id, 'foobar')
