@@ -16,6 +16,8 @@ additional hooks are executed.  These hooks are prefixed with '*after_batch*'.
 ## Example
 
 ```ruby
+require 'resque/batched_job'
+
 module Job
   extend Resque::Plugins::BatchedJob
 
