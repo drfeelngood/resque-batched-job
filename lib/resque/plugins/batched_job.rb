@@ -23,7 +23,7 @@ module Resque
       # Batch the job.  The first argument of a batched job, is the batch id.
       def after_enqueue_batch(id, *args)
         mutex(id) do |bid|
-          redis.rpush(bid, encode(:class => self, :args => args))
+          redis.rpush(bid, encode(:class => self.name, :args => args))
         end
       end
 
@@ -58,7 +58,7 @@ module Resque
       # Remove a job from the batch list.
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
-          redis.lrem(bid, 1, encode(:class => self, :args => args))
+          redis.lrem(bid, 1, encode(:class => self.name, :args => args))
         end
       end
 
