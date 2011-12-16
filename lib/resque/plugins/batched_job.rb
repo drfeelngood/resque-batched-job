@@ -21,6 +21,7 @@ module Resque
       end
 
       # Batch the job.  The first argument of a batched job, is the batch id.
+      # (closes #2)
       def after_enqueue_batch(id, *args)
         mutex(id) do |bid|
           redis.rpush(bid, encode(:class => self.name, :args => args))
@@ -55,7 +56,7 @@ module Resque
         end
       end
 
-      # Remove a job from the batch list.
+      # Remove a job from the batch list. (closes #6)
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
           redis.lrem(bid, 1, encode(:class => self.name, :args => args))
@@ -67,7 +68,7 @@ module Resque
         # Lock a batch key before executing Redis commands.  This will ensure
         # no race conditions occur when modifying batch information.  Here is
         # an example of how this works.  See http://redis.io/commands/setnx for
-        # more information.
+        # more information. (fixes #4) (closes #5)
         # 
         # * Job2 sends SETNX batch:123:lock in order to aquire a lock.
         # * Job1 still has the key locked, so Job2 continues into the loop.
