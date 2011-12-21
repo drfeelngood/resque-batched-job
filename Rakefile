@@ -23,9 +23,14 @@ task :tag do
   sh "git tag v#{Resque::Plugins::BatchedJob::VERSION}"
 end
 
-desc "Build RubyGem."
+desc "Build resque-batched-job RubyGem."
 task :build do
   sh "gem build resque-batched-job.gemspec"
+end
+
+desc "Install current resque-batched-job RubyGem."
+task :install => :build do
+  sh "gem install --local resque-batched-job-#{Resque::Plugins::BatchedJob::VERSION}.gem"
 end
 
 desc "View changelog"
