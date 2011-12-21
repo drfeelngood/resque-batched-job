@@ -11,6 +11,14 @@ Rake::TestTask.new do |task|
   task.verbose = true
 end
 
+begin
+  require 'yard'
+  YARD::Rake::YardocTask.new do |t|
+    t.files   = ['lib/**/*.rb', '-', 'README.md']
+  end
+rescue LoadError
+end
+
 desc "Publish RubyGem and source."
 task :publish => [:build, :tag] do
   sh "git push origin v#{Resque::Plugins::BatchedJob::VERSION}"
