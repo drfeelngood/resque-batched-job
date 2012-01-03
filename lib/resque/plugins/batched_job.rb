@@ -103,6 +103,10 @@ module Resque
         #   and aquired the lock.  This means Job2 has to start from the beginnig.
         # * If the previous timestamp is still expired the lock has been set and
         #   processing can continue safely
+        #
+        # @param id (see Resque::Plugins::BatchedJob#batch)
+        # @yield [bid] Yields the current batch id.
+        # @yieldparam [String] The current batch id.
         def mutex(id, &block)
           is_expired = lambda do |locked_at|
             locked_at.to_f < Time.now.to_f
