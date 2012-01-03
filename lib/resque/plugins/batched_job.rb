@@ -17,7 +17,7 @@ module Resque
 
       # Helper method used to generate the batch key.
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param [Object, #to_s] id Batch identifier. Any Object that responds to #to_s
       # @return [String] Used to identify batch Redis List key
       def batch(id)
         "batch:#{id}"
@@ -25,7 +25,7 @@ module Resque
 
       # Resque hook that handles batching the job. (closes #2)
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param [Object, #to_s] id Batch identifier. Any Object that responds to #to_s
       def after_enqueue_batch(id, *args)
         mutex(id) do |bid|
           redis.rpush(bid, encode(:class => self.name, :args => args))
@@ -36,7 +36,7 @@ module Resque
       # current job is the last in the batch to be performed, invoke the after_batch
       # hooks.
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def after_perform_batch(id, *args)
         remove_batched_job(id, *args)
 
@@ -51,7 +51,7 @@ module Resque
       # Checks the size of the batched job list and returns true if the list is
       # empty or if the key does not exist.
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param id (see Resque::Plugins::BatchedJob#batch)
       def batch_complete?(id)
         mutex(id) do |bid| 
           redis.llen(bid) == 0
@@ -60,7 +60,7 @@ module Resque
 
       # Check to see if the Redis key exists.
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param id (see Resque::Plugins::BatchedJob#batch)
       def batch_exist?(id)
         mutex(id) do |bid| 
           redis.exists(bid)
@@ -69,11 +69,18 @@ module Resque
 
       # Remove a job from the batch list. (closes #6)
       #
-      # @param [Object] id Batch identifier. Any Object that responds to #to_s
+      # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
           redis.lrem(bid, 1, encode(:class => self.name, :args => args))
         end
+      end
+
+      # Remove a job from the batch list and run after hooks if necessary.
+      #
+      # @param id (see Resque::Plugins::BatchedJob#remove_batched_job)
+      def remove_batched_job!(id, *args)
+        after_perform_batch(id, *args)
       end
 
       private
