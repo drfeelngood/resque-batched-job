@@ -47,6 +47,6 @@ task :changelog do
 
   tags.each_slice(2) do |tags|
     puts "========== #{tags[1]}..#{tags[0]} =========="
-    sh "git log --pretty=format:'%h : %s' --graph #{tags[1]}..#{tags[0]}"
+    `git log --pretty=format:'%h : %s' --graph #{tags[1]}..#{tags[0]}`
   end
 end
