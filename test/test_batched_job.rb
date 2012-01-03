@@ -127,6 +127,26 @@ class BatchedJobTest < Test::Unit::TestCase
 
     assert_equal(x * y, Integer(redis.get(@batch)))
   end
+  
+  def test_remove_batched_job
+    Resque.enqueue(JobWithoutArgs, @batch_id)
+
+    assert_nothing_raised do
+      JobWithoutArgs.remove_batched_job(@batch_id)
+    end
+    assert(Job.batch_complete?(@batch_id))
+    assert_equal(false, Job.batch_exist?(@batch_id))
+    assert_equal(false, $batch_complete)
+
+    Resque.enqueue(JobWithoutArgs, @batch_id)
+    
+    assert_nothing_raised do
+      JobWithoutArgs.remove_batched_job!(@batch_id)
+    end
+    assert($batch_complete)
+    assert(Job.batch_complete?(@batch_id))
+    assert_equal(false, Job.batch_exist?(@batch_id))
+  end
 
   private
 
