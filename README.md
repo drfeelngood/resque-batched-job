@@ -21,12 +21,12 @@ require 'resque/batched_job'
 module Job
   extend Resque::Plugins::BatchedJob
 
-  def self.perform(id, *args)
-    prime(id, args)
+  def self.perform(bid, *args)
+    prime(bid, args)
   end
 
-  def self.after_batch_heavy_lifting(id, *args)
-    heavy_lifting(id)
+  def self.after_batch_heavy_lifting(bid, *args)
+    heavy_lifting(bid)
   end
 
 end
