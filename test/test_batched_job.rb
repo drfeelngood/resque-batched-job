@@ -75,7 +75,7 @@ class BatchedJobTest < Test::Unit::TestCase
   # Test that jobs with identical args behave properly.
   def test_duplicate_args
     assert_equal(false, Job.batch_exist?(@batch_id))
-    
+
     assert_nothing_raised do
       5.times { Resque.enqueue(JobWithoutArgs, @batch_id) }
     end
@@ -127,7 +127,7 @@ class BatchedJobTest < Test::Unit::TestCase
 
     assert_equal(x * y, Integer(redis.get(@batch)))
   end
-  
+
   def test_remove_batched_job
     Resque.enqueue(JobWithoutArgs, @batch_id)
 
@@ -139,13 +139,18 @@ class BatchedJobTest < Test::Unit::TestCase
     assert_equal(false, $batch_complete)
 
     Resque.enqueue(JobWithoutArgs, @batch_id)
-    
+
     assert_nothing_raised do
       JobWithoutArgs.remove_batched_job!(@batch_id)
     end
     assert($batch_complete)
     assert(Job.batch_complete?(@batch_id))
     assert_equal(false, Job.batch_exist?(@batch_id))
+  end
+
+  def test_enqueue_batched_job
+    Resque.enqueue_batched_job(JobWithoutArgs, @batch_id)
+    assert(Job.batch_exist?(@batch_id))
   end
 
   private
