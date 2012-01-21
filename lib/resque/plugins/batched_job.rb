@@ -1,5 +1,12 @@
 module Resque
 
+  # This is a small wrapper around Resque.enqueue.
+  # @param [Class] klass Job class.
+  # @param [Object, #to_s] bid Batch identifier.
+  def self.enqueue_batched_job(klass, bid, *args)
+    Resque.enqueue(klass, bid, *args)
+  end
+
   module Plugin
 
     # This hook is really the meaning of our adventure.
