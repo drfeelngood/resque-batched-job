@@ -1,6 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/drfeelngood/resque-batched-job.png)](http://travis-ci.org/drfeelngood/resque-batched-job)
-
-# Resque Batched Job
+# Resque Batched Job [![Build Status](https://secure.travis-ci.org/drfeelngood/resque-batched-job.png)](http://travis-ci.org/drfeelngood/resque-batched-job)
 
 A [Resque](http://github.com/defunkt/resque) plugin. Requires Resque >= 1.10.0
 
