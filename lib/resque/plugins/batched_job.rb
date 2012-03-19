@@ -45,7 +45,7 @@ module Resque
       #
       # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def after_perform_batch(id, *args)
-        if remove_batched_job_and_complete_batch?(id, *args)
+        if remove_batched_job(id, *args) == 0
           after_batch_hooks = Resque::Plugin.after_batch_hooks(self)
           after_batch_hooks.each do |hook|
             send(hook, id, *args)
@@ -78,6 +78,7 @@ module Resque
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
           redis.lrem(bid, 1, encode(:class => self.name, :args => args))
+          redis.llen(bid)
         end
       end
 
@@ -86,13 +87,6 @@ module Resque
       # @param id (see Resque::Plugins::BatchedJob#remove_batched_job)
       def remove_batched_job!(id, *args)
         after_perform_batch(id, *args)
-      end
-
-      def remove_batched_job_and_complete_batch?(id, *args)
-        mutex(id) do |bid|
-          redis.lrem(bid, 1, encode(:class => self.name, :args => args))
-          redis.llen(bid) == 0
-        end
       end
 
       private
