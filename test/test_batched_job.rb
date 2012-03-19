@@ -46,7 +46,7 @@ class BatchedJobTest < Test::Unit::TestCase
   # Make sure the after_batch hook is fired
   def test_batch_hook
     assert_equal(false, Job.batch_exist?(@batch_id))
-    
+
     assert_nothing_raised do
       5.times { Resque.enqueue(Job, @batch_id, "arg#{rand(100)}") }
     end
@@ -129,6 +129,11 @@ class BatchedJobTest < Test::Unit::TestCase
   end
 
   def test_remove_batched_job
+    Resque.enqueue(JobWithoutArgs, @batch_id)
+    Resque.enqueue(JobWithoutArgs, @batch_id)
+    assert_equal(1, JobWithoutArgs.remove_batched_job(@batch_id))
+    assert_equal(0, JobWithoutArgs.remove_batched_job(@batch_id))
+
     Resque.enqueue(JobWithoutArgs, @batch_id)
 
     assert_nothing_raised do

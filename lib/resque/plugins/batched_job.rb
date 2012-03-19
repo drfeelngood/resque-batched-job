@@ -45,9 +45,7 @@ module Resque
       #
       # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def after_perform_batch(id, *args)
-        remove_batched_job(id, *args)
-
-        if batch_complete?(id)
+        if remove_batched_job(id, *args) == 0
           after_batch_hooks = Resque::Plugin.after_batch_hooks(self)
           after_batch_hooks.each do |hook|
             send(hook, id, *args)
@@ -60,7 +58,7 @@ module Resque
       #
       # @param id (see Resque::Plugins::BatchedJob#batch)
       def batch_complete?(id)
-        mutex(id) do |bid| 
+        mutex(id) do |bid|
           redis.llen(bid) == 0
         end
       end
@@ -69,7 +67,7 @@ module Resque
       #
       # @param id (see Resque::Plugins::BatchedJob#batch)
       def batch_exist?(id)
-        mutex(id) do |bid| 
+        mutex(id) do |bid|
           redis.exists(bid)
         end
       end
@@ -80,6 +78,7 @@ module Resque
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
           redis.lrem(bid, 1, encode(:class => self.name, :args => args))
+          redis.llen(bid)
         end
       end
 
@@ -96,13 +95,13 @@ module Resque
         # no race conditions occur when modifying batch information.  Here is
         # an example of how this works.  See http://redis.io/commands/setnx for
         # more information. (fixes #4) (closes #5)
-        # 
+        #
         # * Job2 sends SETNX batch:123:lock in order to aquire a lock.
         # * Job1 still has the key locked, so Job2 continues into the loop.
         # * Job2 sends GET to aquire the lock timestamp.
-        # * If the timestamp does not exist (Job1 released the lock), Job2 
+        # * If the timestamp does not exist (Job1 released the lock), Job2
         #   attemps to start from the beginning again.
-        # * If the timestamp exists and has not expired, Job2 sleeps for a 
+        # * If the timestamp exists and has not expired, Job2 sleeps for a
         #   moment and then retries from the start.
         # * If the timestamp exists and has expired, Job2 sends GETSET to aquire
         #   a lock.  This returns the previous value of the lock.
