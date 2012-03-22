@@ -53,6 +53,13 @@ module Resque
         end
       end
 
+      # After a job is removed, also remove it from the batch.
+      #
+      # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
+      def after_dequeue_batch(id, *args)
+        remove_batched_job(id, *args)
+      end
+
       # Checks the size of the batched job list and returns true if the list is
       # empty or if the key does not exist.
       #
