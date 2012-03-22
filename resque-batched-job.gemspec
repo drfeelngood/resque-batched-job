@@ -24,5 +24,5 @@ DESC
   s.add_dependency "resque", ">= 1.10.0"
 
   s.add_development_dependency "turn"
-
+  s.add_development_dependency "minitest"
 end
