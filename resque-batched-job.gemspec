@@ -17,10 +17,12 @@ Gem::Specification.new do |s|
 additional work can be performed usings batch hooks.
 DESC
 
-  s.add_dependency "resque", ">= 1.10.0"
-
   s.files       = %w(LICENSE Rakefile README.md)
   s.files      += Dir.glob("lib/**/*")
   s.test_files += Dir.glob("test/test_*")
+
+  s.add_dependency "resque", ">= 1.10.0"
+
+  s.add_development_dependency "turn"
 
 end
