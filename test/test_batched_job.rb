@@ -44,7 +44,7 @@ class BatchedJobTest < Test::Unit::TestCase
   end
 
   # Make sure the after_batch hook is fired
-  def test_batch_hook
+  def test_batch_hooks
     assert_equal(false, Job.batch_exist?(@batch_id))
 
     assert_nothing_raised do
@@ -156,6 +156,24 @@ class BatchedJobTest < Test::Unit::TestCase
   def test_enqueue_batched_job
     Resque.enqueue_batched_job(JobWithoutArgs, @batch_id)
     assert(Job.batch_exist?(@batch_id))
+  end
+
+  def test_dequeue
+    assert_nothing_raised do
+      2.times do
+        Resque.enqueue(JobWithoutArgs, @batch_id)
+        Resque.enqueue(Job, @batch_id, "foo")
+      end
+    end
+
+    Resque.dequeue(JobWithoutArgs, @batch_id)
+    assert_equal(3, redis.llen(@batch))
+    Resque.dequeue(Job, @batch_id, "foo")
+    assert_equal(2, redis.llen(@batch))
+    Resque.dequeue(JobWithoutArgs, @batch_id)
+    Resque.dequeue(Job, @batch_id, "foo")
+    assert(Job.batch_complete?(@batch_id))
+    assert_equal(false, Job.batch_exist?(@batch_id))
   end
 
   private
