@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'test/unit'
 require 'thread'
-gem 'minitest'
 require 'turn/autorun'
 require 'resque'
 
