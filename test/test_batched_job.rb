@@ -6,11 +6,12 @@ class BatchedJobTest < Test::Unit::TestCase
     $batch_complete = false
     @batch_id = :foo
     @batch = "batch:#{@batch_id}"
+    @queue = "queue:test"
   end
 
   def teardown
     redis.del(@batch)
-    redis.del("queue:test")
+    redis.del(@queue)
     redis.del("#{@batch}:lock")
   end
 
@@ -174,6 +175,49 @@ class BatchedJobTest < Test::Unit::TestCase
     Resque.dequeue(Job, @batch_id, "foo")
     assert(Job.batch_complete?(@batch_id))
     assert_equal(false, Job.batch_exist?(@batch_id))
+  end
+
+  def test_batched_jobs
+    @jobs = nil
+    assert_nothing_raised do
+      4.times { Resque.enqueue(Job, @batch_id, "foo") }
+    end
+    assert_nothing_raised do
+      @jobs = Job.batched_jobs(@batch_id)
+    end
+    assert_equal(4, @jobs.size)
+    @jobs.each do |j|
+      assert_equal(Job, j.payload_class, "Woa! #{j.payload_class} does not belong.")
+    end
+  end
+
+  def test_batched_jobs_multiple_classes
+    @jobs1, @jobs2 = nil
+    assert_nothing_raised do
+      3.times { Resque.enqueue(Job, @batch_id, "foo") }
+      2.times { Resque.enqueue(JobWithoutArgs, @batch_id) }
+    end
+    assert_nothing_raised do
+      @jobs1 = Job.batched_jobs(@batch_id)
+      @jobs2 = JobWithoutArgs.batched_jobs(@batch_id)
+    end
+    assert_equal(3, @jobs1.size)
+    assert_equal(2, @jobs2.size)
+  end
+
+  def test_recreate_batched_jobs
+    assert_nothing_raised do
+      4.times { Resque.enqueue(JobWithoutArgs, @batch_id) }
+    end
+    assert_nothing_raised do
+      4.times { redis.rpop(@queue) }
+    end
+    assert_equal(0, redis.llen(@queue))
+    assert_nothing_raised do
+      JobWithoutArgs.recreate_batched_jobs(@batch_id)
+    end
+    assert_equal(4, redis.llen(@queue))
+    assert_equal(4, redis.llen(@batch))
   end
 
   private
