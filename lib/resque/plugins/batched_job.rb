@@ -46,6 +46,7 @@ module Resque
       # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def after_perform_batch(id, *args)
         if remove_batched_job(id, *args) == 0
+          
           after_batch_hooks = Resque::Plugin.after_batch_hooks(self)
           after_batch_hooks.each do |hook|
             send(hook, id, *args)
@@ -94,6 +95,31 @@ module Resque
       # @param id (see Resque::Plugins::BatchedJob#remove_batched_job)
       def remove_batched_job!(id, *args)
         after_perform_batch(id, *args)
+      end
+
+      # Build a collection of Resque::Job objects that represent each job in a 
+      # batch of the same class.
+      #
+      # @param id (see Resque::Plugins::BatchedJob#remove_batched_job)
+      # @returns [Array] Collection of Resque::Job objects
+      def batched_jobs(id)
+        bid = batch(id)
+        regexp = /\A\{\"class\":\"#{self.name}\",\"args\":\[/
+        redis.lrange(bid, 0, redis.llen(bid)-1).grep(regexp).map do |string|
+          payload = decode(string)
+          payload['args'].unshift(id)
+          Resque::Job.new(@queue, payload)
+        end
+      end
+
+      # Collect and recreate all jobs for the given batch.
+      #
+      # @param id (see Resque::Plugins::BatchedJob#remove_batched_job)
+      # @returns [Integer] Number of jobs recreated.
+      def recreate_batched_jobs(id)
+        batched_jobs(id).each do |job|
+          job.recreate
+        end.size
       end
 
       private
