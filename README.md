@@ -1,6 +1,6 @@
 # Resque Batched Job [![Build Status](https://secure.travis-ci.org/drfeelngood/resque-batched-job.png)](http://travis-ci.org/drfeelngood/resque-batched-job)
 
-A [Resque](http://github.com/defunkt/resque) plugin. Requires Resque >= 1.10.0
+A [Resque](https://github.com/defunkt/resque) plugin. Requires Resque >= 1.10.0
 
 This plugin adds the ability to batch jobs and run additional hooks after the 
 last job in a batch is performed.  Using the '*after_enqueue*' hook, the job
