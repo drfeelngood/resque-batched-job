@@ -11,10 +11,10 @@ rvm:
   - rbx-19mode
 
 gemfile:
-    - Gemfile
+  - Gemfile
 
 env:
-    - DB=redis
+  - DB=redis
 
 matrix:
   allow_failures:
