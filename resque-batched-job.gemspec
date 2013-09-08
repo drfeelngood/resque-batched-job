@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 additional work can be performed usings batch hooks.
 DESC
 
+  s.license     = 'MIT'
   s.files       = [ 'LICENSE',
                     'lib/resque-batched-job.rb',
                     'lib/resque/batched_job.rb',
