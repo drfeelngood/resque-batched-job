@@ -8,3 +8,6 @@ group :documentation do
 end
 
 gem 'rake'
+gem 'turn', '~> 0.9.6'
+gem 'minitest', '~> 4.7.5'
+
