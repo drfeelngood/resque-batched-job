@@ -2,3 +2,5 @@
 .rvmrc
 doc
 .yardoc
+.bundle
+Gemfile.lock

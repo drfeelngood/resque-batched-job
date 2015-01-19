@@ -1,24 +1,13 @@
 language: ruby
-
+script: bundle exec rake
+services: redis
 rvm:
-  - 1.8.7
-  - 1.9.2
   - 1.9.3
   - 2.0.0
-  - jruby-18mode
+  - 2.1.0
   - jruby-19mode
-  - rbx-18mode
-  - rbx-19mode
-
-gemfile:
-  - Gemfile
-
-env:
-  - DB=redis
-
+  - rbx
 matrix:
   allow_failures:
-    - rvm: jruby-18mode
     - rvm: jruby-19mode
-    - rvm: rbx-18mode
-    - rvm: rbx-19mode
+    - rvm: rbx
