@@ -24,7 +24,7 @@ DESC
                     'lib/resque/plugins/batched_job.rb',
                     'lib/resque/plugins/batched_job/version.rb' ]
 
-  s.add_dependency "resque", ">= 1.10.0"
+  s.add_dependency "resque", ">= 1.25.0"
 
   s.add_development_dependency "turn"
   s.add_development_dependency "minitest"

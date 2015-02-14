@@ -20,8 +20,6 @@ module Resque
 
     module BatchedJob
 
-      include Resque::Helpers
-
       # Helper method used to generate the batch key.
       #
       # @param [Object, #to_s] id Batch identifier. Any Object that responds to #to_s
@@ -35,7 +33,7 @@ module Resque
       # @param [Object, #to_s] id Batch identifier. Any Object that responds to #to_s
       def after_enqueue_batch(id, *args)
         mutex(id) do |bid|
-          redis.rpush(bid, encode(:class => self.name, :args => args))
+          redis.rpush(bid, Resque.encode(:class => self.name, :args => args))
         end
       end
 
@@ -85,7 +83,7 @@ module Resque
       # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
-          redis.lrem(bid, 1, encode(:class => self.name, :args => args))
+          redis.lrem(bid, 1, Resque.encode(:class => self.name, :args => args))
           redis.llen(bid)
         end
       end
@@ -106,7 +104,7 @@ module Resque
         bid = batch(id)
         regexp = /\A\{\"class\":\"#{self.name}\",\"args\":\[/
         redis.lrange(bid, 0, redis.llen(bid)-1).grep(regexp).map do |string|
-          payload = decode(string)
+          payload = Resque.decode(string)
           payload['args'].unshift(id)
           Resque::Job.new(@queue, payload)
         end
@@ -123,6 +121,10 @@ module Resque
       end
 
       private
+
+        def redis
+          Resque.redis
+        end
 
         # Lock a batch key before executing Redis commands.  This will ensure
         # no race conditions occur when modifying batch information.  Here is
