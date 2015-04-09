@@ -122,7 +122,10 @@ module Resque
 
       private
 
+        # Handle either Resque 1-x-stable or 2.0.0.pre
         def redis
+          Resque.config.redis
+        rescue NoMethodError => e
           Resque.redis
         end
 
