@@ -124,9 +124,7 @@ module Resque
 
         # Handle either Resque 1-x-stable or 2.0.0.pre
         def redis
-          Resque.config.redis
-        rescue NoMethodError => e
-          Resque.redis
+          Resque.respond_to?(:redis) ? Resque.redis : Resque.backend.store
         end
 
         # Lock a batch key before executing Redis commands.  This will ensure
