@@ -158,6 +158,14 @@ class BatchedJobTest < Test::Unit::TestCase
     end
   end
 
+  def test_mutating_job
+    Resque.enqueue_batched_job(MutatingJob, @batch_id, { 'ok' => 'so far, so good' })
+
+    assert_raise RuntimeError do
+      Resque.reserve(:test).perform
+    end
+  end
+
   def test_enqueue_batched_job
     Resque.enqueue_batched_job(JobWithoutArgs, @batch_id)
     assert(Job.batch_exist?(@batch_id))

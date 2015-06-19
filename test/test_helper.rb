@@ -32,3 +32,17 @@ class JobWithoutArgs
   end
 
 end
+
+class MutatingJob
+  extend Resque::Plugins::BatchedJob
+  @queue = :test
+
+  def self.perform(batch_id, arg)
+    arg['oops'] = 'mutated!!'
+  end
+
+  def self.after_batch_hook(batch_id, arg)
+    $batch_complete = true
+  end
+
+end
