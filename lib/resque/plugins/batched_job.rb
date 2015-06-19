@@ -83,7 +83,10 @@ module Resque
       # @param id (see Resque::Plugins::BatchedJob#after_enqueue_batch)
       def remove_batched_job(id, *args)
         mutex(id) do |bid|
-          redis.lrem(bid, 1, Resque.encode(:class => self.name, :args => args))
+          removed_count = redis.lrem(bid, 1, Resque.encode(:class => self.name, :args => args))
+
+          raise "Failed to remove batched job, id: #{id}, args: #{args.join(', ')}" if removed_count != 1
+
           redis.llen(bid)
         end
       end
